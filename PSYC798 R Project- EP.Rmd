@@ -1,0 +1,66 @@
+---
+title: "PSYC798 Project"
+Elle Pope
+---
+
+Project requirements:
+1) I chose the California Health Interview Survey (CHIS) as my dataset
+2) I ran a probit regression and created a few figures
+
+```{r}
+# Libraries & Importing Data
+library(haven)
+library(dplyr)
+CHIS <- read_dta("/Users/ellepope/Desktop/R Class/Project/R_Dataset.dta")
+
+# Viewing Data
+nrow(CHIS)
+ncol(CHIS)
+colnames(CHIS)
+head(CHIS)
+sapply(CHIS, class)
+summary(CHIS)
+
+# Viewing & reformatting relevant variables
+  # Voted in 2016
+summary(as.factor(CHIS$vote_pres16))
+voted <- as.factor(CHIS$vote_pres16)
+levels(voted)<-c("1","2",NA,NA)
+levels(voted)
+summary(voted)
+    
+  # Poverty Level
+summary(as.factor(CHIS$povll))
+poverty <- as.factor(CHIS$povll)
+levels(poverty)<-c("1","2","3","4")
+levels(poverty)
+summary(poverty)
+
+# Probit Regression 
+myregression<- 
+    glm(formula = voted ~ poverty, family = binomial(link ="probit"), data = CHIS)
+summary(myregression)
+
+# Playing with graphics
+plot <- ggplot(CHIS, aes(poverty)) + geom_bar(aes(fill = voted)) + 
+        scale_fill_brewer(palette="Paired", name="Voted",
+        breaks=c("1", "2", "NA"),
+        labels=c("Yes", "No", "NA")) +
+        ggtitle("% of Federal Poverty Level by 2016 election votes") + 
+        xlab("% of FPL")
+plot
+        
+povlbs <- c("0-99%", "100-199%", "200-299%", "300% +")
+barplot(table(poverty), ylim=c(0,20000), 
+        label_value = povlbs,
+        xlab = "% of Federal Poverty Level", 
+        ylab = "# of Respondents", 
+        axis.lty = "solid", space = .5)
+
+votelbls <- c("Yes (73%)", "No (27%)")
+pie(table(voted),
+    labels = votelbls,
+    col = c("royalblue", "firebrick"),
+    main = "# of People who voted in 2016 Election in California")
+```
+
